@@ -1,0 +1,13 @@
+# Local secrets and credentials
+.env
+api keys.txt
+
+# Python and local runtime files
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local application data
+agroguard.db
+keys/

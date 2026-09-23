@@ -1,0 +1,8 @@
+{
+  "name": "AgroGuard",
+  "short_name": "AgroGuard",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eef4ed",
+  "theme_color": "#183a2b"
+}

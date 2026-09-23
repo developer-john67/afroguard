@@ -1,0 +1,62 @@
+[
+  {
+    "product_id": "PROD001",
+    "name": "CropShield Fungicide 250SC",
+    "manufacturer": "AgroSafe Industries",
+    "manufacturer_id": "MFG001",
+    "active_ingredient_class": "strobilurin",
+    "batch": "B24A001",
+    "expiry": "2026-12-31",
+    "registration_number": "REG-AG-2024-001"
+  },
+  {
+    "product_id": "PROD002",
+    "name": "CropShield Fungicide 250SC",
+    "manufacturer": "AgroSafe Industries",
+    "manufacturer_id": "MFG001",
+    "active_ingredient_class": "strobilurin",
+    "batch": "B24A002",
+    "expiry": "2027-06-30",
+    "registration_number": "REG-AG-2024-001"
+  },
+  {
+    "product_id": "PROD003",
+    "name": "TriazoleGuard 430EC",
+    "manufacturer": "GreenField Agri",
+    "manufacturer_id": "MFG002",
+    "active_ingredient_class": "triazole",
+    "batch": "GF24B001",
+    "expiry": "2026-11-30",
+    "registration_number": "REG-GF-2024-003"
+  },
+  {
+    "product_id": "PROD004",
+    "name": "InsectStop 50WG",
+    "manufacturer": "CropDefend Ltd",
+    "manufacturer_id": "MFG003",
+    "active_ingredient_class": "diamide",
+    "batch": "CD24C001",
+    "expiry": "2027-03-31",
+    "registration_number": "REG-CD-2024-007"
+  },
+  {
+    "product_id": "PROD005",
+    "name": "PestBlock 100SC",
+    "manufacturer": "CropDefend Ltd",
+    "manufacturer_id": "MFG003",
+    "active_ingredient_class": "spinosyn",
+    "batch": "CD24C002",
+    "expiry": "2027-01-31",
+    "registration_number": "REG-CD-2024-008"
+  },
+  {
+    "product_id": "PROD006",
+    "name": "NutriBoost NPK 20-20-20",
+    "manufacturer": "SoilHealth Corp",
+    "manufacturer_id": "MFG004",
+    "active_ingredient_class": "fertilizer",
+    "batch": "SH24D001",
+    "expiry": "2028-12-31",
+    "registration_number": "REG-SH-2024-012"
+  }
+]
