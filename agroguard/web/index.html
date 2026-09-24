@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#2E7D32">
-    <meta name="description" content="AgroGuard - Counterfeit Agro-Input Detector & Crop Diagnosis">
+    <meta name="theme-color" content="#133e2b">
+    <meta name="description" content="AgroGuard - Crop health diagnosis and cryptographic product verification">
     <link rel="manifest" href="/app/manifest.json">
     <link rel="icon" type="image/svg+xml" href="/app/icon.svg">
     <link rel="apple-touch-icon" href="/app/icon-192.png">
@@ -27,15 +27,28 @@
 
         <main id="main" class="main">
             <section id="home" class="screen active">
-                <div class="card">
-                    <h2 data-i18n="home.title">What do you want to check?</h2>
+                <div class="card glass">
+                    <div class="home-header">
+                        <img src="/app/icon.svg" alt="AgroGuard" class="home-icon" width="56" height="56">
+                        <h2 data-i18n="home.title">What would you like to check?</h2>
+                        <p class="subtitle" data-i18n="home.subtitle">Diagnose crop issues or verify product authenticity with cryptographic signatures.</p>
+                    </div>
                     <div class="button-grid">
-                        <button class="btn btn-primary btn-large" onclick="navigate('diagnose')">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        <button class="btn btn-cta" onclick="navigate('diagnose')">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" radius="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
                             <span data-i18n="home.checkCrop">Check my crop</span>
                         </button>
-                        <button class="btn btn-primary btn-large" onclick="navigate('verify')">
-                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9h18"/><path d="M3 15h18"/><path d="M3 3h18v2"/><path d="M3 19h18v2"/><rect x="3" y="3" width="18" height="16" rx="2"/></svg>
+                        <button class="btn btn-cta" onclick="navigate('verify')">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                                <path d="M3 9h18"/>
+                                <path d="M3 15h18"/>
+                            </svg>
                             <span data-i18n="home.checkProduct">Check a product</span>
                         </button>
                     </div>
@@ -43,91 +56,154 @@
             </section>
 
             <section id="diagnose" class="screen">
-                <div class="card">
-                    <button class="btn-back" onclick="navigate('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+                <div class="card glass">
+                    <button class="btn-back" onclick="navigate('home')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                        Back
+                    </button>
                     <h2 data-i18n="diagnose.title">Check my crop</h2>
-                    <p class="subtitle" data-i18n="diagnose.subtitle">Take a clear photo of a single affected leaf</p>
+                    <p class="subtitle" data-i18n="diagnose.subtitle">Take a clear photo of a single affected leaf.</p>
                     <input type="file" id="cropImage" accept="image/*" capture="environment" hidden onchange="handleCropImage(this)">
                     <button class="btn btn-secondary btn-full" onclick="document.getElementById('cropImage').click()">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="12" r="4"/></svg>
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                            <circle cx="12" cy="12" radius="4"/>
+                        </svg>
                         <span data-i18n="diagnose.takePhoto">Take Photo</span>
                     </button>
                     <div id="cropPreview" class="preview hidden"></div>
-                    <button id="diagnoseBtn" class="btn btn-primary btn-full hidden" onclick="submitDiagnosis()" data-i18n="diagnose.analyze">Analyze</button>
-                    <div id="diagnoseLoading" class="loading hidden" data-i18n="diagnose.loading">Analyzing...</div>
+                    <button id="diagnoseBtn" class="btn btn-cta btn-full hidden" onclick="submitDiagnosis()" data-i18n="diagnose.analyze">Analyze</button>
+                    <div id="diagnoseLoading" class="loading hidden" data-i18n="diagnose.loading">Analyzing crop image...</div>
                 </div>
             </section>
 
             <section id="verify" class="screen">
-                <div class="card">
-                    <button class="btn-back" onclick="navigate('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+                <div class="card glass">
+                    <button class="btn-back" onclick="navigate('home')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                        Back
+                    </button>
                     <h2 data-i18n="verify.title">Check a product</h2>
-                    <p class="subtitle" data-i18n="verify.subtitle">Scan the QR code on the package</p>
+                    <p class="subtitle" data-i18n="verify.subtitle">Scan the QR code on the package.</p>
+
                     <div class="scanner-container">
-                        <video id="scannerVideo" playsinline hidden></video>
+                        <video id="scannerVideo" playsinline autoplay muted hidden></video>
                         <canvas id="scannerCanvas" hidden></canvas>
                         <div id="scannerOverlay" class="scanner-overlay">
                             <div class="scanner-frame"></div>
-                            <p data-i18n="verify.alignQR">Align QR code within frame</p>
+                            <p class="scanner-hint" data-i18n="verify.alignQR">Align QR code within frame</p>
+                            <button class="btn btn-secondary" onclick="startScanner()" data-i18n="verify.startScanner">Start camera</button>
                         </div>
                     </div>
+
                     <div class="demo-issuer">
-                        <label for="demoProduct">Demo product</label>
+                        <label for="demoProduct" data-i18n="verify.demoProduct">Demo product</label>
                         <select id="demoProduct">
                             <option value="PROD001">CropShield Fungicide 250SC</option>
                             <option value="PROD003">TriazoleGuard 430EC</option>
                             <option value="PROD004">InsectStop 50WG</option>
                         </select>
-                        <button class="btn btn-secondary btn-full" onclick="generateDemoQr()">Generate unique demo QR</button>
+                        <button class="btn btn-secondary btn-full" onclick="generateDemoQr()">
+                            <span data-i18n="verify.generateDemoQr">Generate demo QR</span>
+                        </button>
                         <div id="generatedQr" class="generated-qr hidden"></div>
                     </div>
+
                     <div class="divider" data-i18n="verify.or">or</div>
-                    <label for="qrCodeInput">Paste scanned QR value</label>
+
+                    <label for="qrCodeInput" data-i18n="verify.pasteQR">Paste scanned QR value</label>
                     <textarea id="qrCodeInput" rows="3" placeholder="https://.../v/payload.signature"></textarea>
-                    <button class="btn btn-primary btn-full" onclick="submitQrCode()">Verify QR code</button>
-                    <input type="file" id="qrImage" accept="image/*" capture="environment" hidden onchange="decodeQrImage(this)">
-                    <button class="btn btn-secondary btn-full" onclick="document.getElementById('qrImage').click()">Upload QR image</button>
-                    <input type="file" id="labelImage" accept="image/*" capture="environment" hidden onchange="handleLabelImage(this)">
-                    <button class="btn btn-secondary btn-full" onclick="document.getElementById('labelImage').click()">
-                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="12" r="4"/></svg>
-                        <span data-i18n="verify.photoLabel">Photograph the label</span>
-                    </button>
+                    <button class="btn btn-cta btn-full" onclick="submitQrCode()" data-i18n="verify.verifyBtn">Verify QR code</button>
+
+                    <div style="margin-top: var(--ag-space-md);">
+                        <input type="file" id="qrImage" accept="image/*" capture="environment" hidden onchange="decodeQrImage(this)">
+                        <button class="btn btn-secondary btn-full" onclick="document.getElementById('qrImage').click()" data-i18n="verify.uploadQrImage">Upload QR image</button>
+                    </div>
+
+                    <div class="divider" data-i18n="verify.or">or</div>
+
+                    <div style="margin-top: var(--ag-space-md);">
+                        <input type="file" id="labelImage" accept="image/*" capture="environment" hidden onchange="handleLabelImage(this)">
+                        <button class="btn btn-secondary btn-full" onclick="document.getElementById('labelImage').click()">
+                            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                                <circle cx="12" cy="12" radius="4"/>
+                            </svg>
+                            <span data-i18n="verify.photoLabel">Photograph the label</span>
+                        </button>
+                    </div>
+
                     <div id="labelPreview" class="preview hidden"></div>
-                    <button id="verifyLabelBtn" class="btn btn-primary btn-full hidden" onclick="submitLabel()" data-i18n="verify.checkLabel">Check Label</button>
-                    <div id="verifyLoading" class="loading hidden" data-i18n="verify.loading">Verifying...</div>
+                    <button id="verifyLabelBtn" class="btn btn-cta btn-full hidden" onclick="submitLabel()" data-i18n="verify.checkLabel">Check Label</button>
+                    <div id="verifyLoading" class="loading hidden" data-i18n="verify.loading">Verifying product...</div>
                 </div>
             </section>
 
             <section id="result" class="screen">
-                <div class="card result-card">
-                    <button class="btn-back" onclick="navigate('home')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+                <div class="card glass result-card">
+                    <button class="btn-back" onclick="navigate('home')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"/>
+                        </svg>
+                        Back
+                    </button>
+                    <div class="subtitle-bar">
+                        <span class="dot"></span>
+                        <span class="label" id="resultCategory" data-i18n="result.category.diagnosis">Crop diagnosis</span>
+                    </div>
                     <div id="resultHeader" class="result-header">
-                        <div id="resultIcon" class="result-icon"></div>
+                        <div id="resultBadge" class="result-badge ok">✓</div>
                         <div>
                             <h2 id="resultTitle"></h2>
                             <p id="resultSummary"></p>
                         </div>
                     </div>
-                    <div id="resultDetails" class="result-details hidden">
+
+                    <div class="result-content-block">
+                        <div id="resultQuickInfo" class="subtitle-bar" style="margin-bottom: var(--ag-space-md);">
+                            <span class="dot" id="quickInfoDot"></span>
+                            <span class="label" id="quickInfoLabel"></span>
+                        </div>
+                        <div id="resultContent" class="result-content">
+                            <div id="resultContentInner"></div>
+                        </div>
+                    </div>
+
+                    <div id="resultDetails" class="result-details">
                         <button class="btn-toggle" onclick="toggleDetails()" aria-expanded="false">
                             <span data-i18n="result.showDetails">Show details</span>
-                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
                         </button>
-                        <div id="resultContent" class="result-content"></div>
+                        <div id="resultContentDetails" class="result-content hidden">
+                            <div id="resultContentDetailsInner"></div>
+                        </div>
                     </div>
-                    <div id="resultActions" class="result-actions"></div>
+
+                    <div id="resultActions" class="result-actions">
+                        <button class="btn btn-secondary" onclick="navigate('home')" data-i18n="result.backHome">Back to home</button>
+                    </div>
                 </div>
             </section>
         </main>
 
         <footer class="footer">
             <button class="btn-read" id="readAloudBtn" onclick="speakResult()" aria-label="Read aloud">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                    <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
             </button>
             <p class="disclaimer" data-i18n="footer.disclaimer">AgroGuard provides information only, not medical or agronomic advice. Consult a local extension officer.</p>
         </footer>
     </div>
 
+    <script src="/app/i18n.js"></script>
     <script src="/app/app.js"></script>
 </body>
 </html>

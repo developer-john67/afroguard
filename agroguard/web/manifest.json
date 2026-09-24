@@ -3,6 +3,13 @@
   "short_name": "AgroGuard",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#eef4ed",
-  "theme_color": "#183a2b"
+  "background_color": "#f3fcf5",
+  "theme_color": "#133e2b",
+  "icons": [
+    {
+      "src": "/app/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
 }

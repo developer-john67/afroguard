@@ -7,6 +7,7 @@ from server.prompts import EXPLANATION_SYSTEM, EXPLANATION_USER
 from server.schemas import DiagnoseResponse
 from server.kb_loader import get_disease_entry
 from server.plant_model import CONFIDENCE_THRESHOLD, predict
+from server.crop_model import predict_crop
 
 GENERATE_EXPLANATION = os.getenv("GENERATE_EXPLANATION", "1") == "1"
 
@@ -25,12 +26,32 @@ SUPPORTED_CROPS = {"Corn_(maize)": "maize", "Tomato": "tomato"}
 
 
 def diagnose_image(image_bytes: bytes, lang: str = "en") -> DiagnoseResponse:
+    crop_prediction = predict_crop(image_bytes)
+    if crop_prediction.confidence < CONFIDENCE_THRESHOLD:
+        return DiagnoseResponse(
+            status="uncertain",
+            retake_reason=f"The crop model is only {crop_prediction.confidence:.0%} confident. Try a clearer photo of one leaf.",
+            crop=crop_prediction.crop.lower(),
+            differential=[],
+            diagnosis_id=uuid4(),
+        )
+
+    crop_name = {"Corn": "maize", "Tomato": "tomato"}.get(crop_prediction.crop)
+    if not crop_name:
+        return DiagnoseResponse(
+            status="uncertain",
+            retake_reason=f"{crop_prediction.crop} was recognized, but a disease classifier for this crop is not installed yet.",
+            crop=crop_prediction.crop.lower(),
+            differential=[{"condition": "crop_recognized", "agreement": crop_prediction.confidence, "visible_evidence": []}],
+            diagnosis_id=uuid4(),
+        )
+
     prediction = predict(image_bytes)
     raw_crop, _, _ = prediction.class_name.partition("___")
-    crop = SUPPORTED_CROPS.get(raw_crop)
+    crop = crop_name
     condition = CLASS_TO_CONDITION.get(prediction.class_name)
 
-    if not crop or not condition:
+    if raw_crop != ("Corn_(maize)" if crop_name == "maize" else "Tomato") or not condition:
         return DiagnoseResponse(
             status="out_of_scope" if not crop else "uncertain",
             retake_reason="This model only covers supported maize and tomato classes. Try a clear leaf photo.",
