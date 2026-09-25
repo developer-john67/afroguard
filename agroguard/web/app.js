@@ -4,6 +4,7 @@ const state = {
     lang: "en",
     diagnosisId: null,
 };
+let cropCameraStream = null;
 
 const VERDICT_BADGE = {
     GENUINE: { cls: "genuine", icon: "✓", dot: "trust" },
@@ -29,6 +30,7 @@ function clientId() {
 }
 
 function navigate(screen) {
+    if (screen !== "diagnose") closeCropCamera();
     document.querySelectorAll(".screen").forEach((item) => item.classList.remove("active"));
     const target = document.getElementById(screen);
     if (target) target.classList.add("active");
@@ -55,6 +57,12 @@ function setQuickInfo(labelKey, dotClass) {
     if (txt) lbl.textContent = txt;
 }
 
+function displayCondition(condition) {
+    return String(condition || "Not determined")
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
 function clearQuickInfo() {
     document.getElementById("quickInfoDot").style.background = "var(--ag-secondary)";
     document.getElementById("quickInfoLabel").textContent = "";
@@ -73,6 +81,10 @@ function showError(containerId, message) {
 function previewImage(input, previewId, buttonId) {
     const file = input.files && input.files[0];
     if (!file) return;
+    return showImagePreview(file, previewId, buttonId);
+}
+
+function showImagePreview(file, previewId, buttonId) {
     const preview = document.getElementById(previewId);
     preview.innerHTML = "";
     const image = document.createElement("img");
@@ -85,7 +97,68 @@ function previewImage(input, previewId, buttonId) {
 }
 
 function handleCropImage(input) {
+    if (!input.files || !input.files[0]) return;
     state.cropFile = previewImage(input, "cropPreview", "diagnoseBtn");
+}
+
+async function openCropCamera() {
+    document.querySelectorAll(".error").forEach((item) => item.remove());
+    closeCropCamera();
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        document.getElementById("cropImage").click();
+        return;
+    }
+
+    try {
+        cropCameraStream = await navigator.mediaDevices.getUserMedia({
+            audio: false,
+            video: { facingMode: { ideal: "environment" } },
+        });
+        const video = document.getElementById("cropCameraVideo");
+        video.srcObject = cropCameraStream;
+        document.getElementById("cropCameraPanel").classList.remove("hidden");
+        await video.play();
+    } catch (error) {
+        closeCropCamera();
+        const message = error.name === "NotAllowedError"
+            ? "Camera permission was denied. Allow camera access in your browser settings and try again."
+            : "Could not open the camera. Use Upload from gallery or check that your camera is available.";
+        showError("cameraError", message);
+    }
+}
+
+function closeCropCamera() {
+    if (cropCameraStream) {
+        cropCameraStream.getTracks().forEach((track) => track.stop());
+        cropCameraStream = null;
+    }
+    const video = document.getElementById("cropCameraVideo");
+    if (video) video.srcObject = null;
+    const panel = document.getElementById("cropCameraPanel");
+    if (panel) panel.classList.add("hidden");
+}
+
+function captureCropPhoto() {
+    const video = document.getElementById("cropCameraVideo");
+    if (!video.videoWidth || !video.videoHeight) {
+        showError("cameraError", "The camera is still starting. Please wait a moment and try again.");
+        return;
+    }
+
+    const scale = Math.min(1, 1600 / Math.max(video.videoWidth, video.videoHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(video.videoWidth * scale);
+    canvas.height = Math.round(video.videoHeight * scale);
+    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+        if (!blob) {
+            showError("cameraError", "The photo could not be captured. Please try again.");
+            return;
+        }
+        const file = new File([blob], `agroguard-${Date.now()}.jpg`, { type: "image/jpeg" });
+        state.cropFile = showImagePreview(file, "cropPreview", "diagnoseBtn");
+        closeCropCamera();
+    }, "image/jpeg", 0.9);
 }
 
 function handleLabelImage(input) {
@@ -289,13 +362,16 @@ function renderDiagnosis(data) {
     const evidenceText = t("fields.evidence") || "Visible evidence";
     const diffText = t("fields.differential") || "Differential";
     const diagIdText = t("fields.diagnosisId") || "Diagnosis ID";
+    const explanationText = data.explanation_localized
+        ? `<p class="diagnosis-guidance">${data.explanation_localized}</p>`
+        : "";
 
     const differential = (data.differential || []).map((item) => {
         const ev = item.visible_evidence || [];
         const evHtml = ev.length ? `<div class="field-row" style="padding:0.2rem 0; display:block;"><span style="color:var(--ag-on-surface-variant); font-size:0.8rem;">${ev.map(e => "• " + e).join("<br>")}</span></div>` : "";
         return `
             <div class="field-row">
-                <span class="field-label">${item.condition}</span>
+                <span class="field-label">${displayCondition(item.condition)}</span>
                 <span class="field-value" style="color:${item.agreement >= 0.5 ? 'var(--ag-trust)' : 'var(--ag-warning)'}">${Math.round(item.agreement * 100)}%</span>
             </div>
             ${evHtml}
@@ -319,23 +395,21 @@ function renderDiagnosis(data) {
         </div>
         <div class="field-row">
             <span class="field-label">${conditionText}</span>
-            <span class="field-value">${data.top_condition || "Not determined"}</span>
+            <span class="field-value">${displayCondition(data.top_condition)}</span>
         </div>
         ${differential ? `<div class="field-row" style="margin-top:var(--ag-space-sm); border-top:1px solid var(--ag-outline-variant); padding-top:var(--ag-space-xs);">${diffText}</div>${differential}` : ""}
         ${recommendedHtml}
         ${controlsHtml}
+        ${explanationText}
     `;
 
     document.getElementById("resultContentInner").innerHTML = content;
 
-    const explanationHtml = data.explanation_localized
-        ? `<p style="font-size:0.9rem; line-height:1.5; color:var(--ag-on-surface-variant); margin-bottom:var(--ag-space-sm);">${data.explanation_localized}</p>`
-        : "";
     const diagIdHtml = data.diagnosis_id
         ? `<div class="field-row"><span class="field-label">${diagIdText}</span><span class="field-value">${data.diagnosis_id}</span></div>`
         : "";
 
-    document.getElementById("resultContentDetailsInner").innerHTML = explanationHtml + diagIdHtml;
+    document.getElementById("resultContentDetailsInner").innerHTML = diagIdHtml;
     const detailsContent = document.getElementById("resultContentDetails");
     detailsContent.classList.add("hidden");
     document.querySelector(".btn-toggle").setAttribute("aria-expanded", "false");

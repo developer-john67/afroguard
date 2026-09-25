@@ -49,12 +49,12 @@ def diagnose_image(image_bytes: bytes, lang: str = "en") -> DiagnoseResponse:
     prediction = predict(image_bytes)
     raw_crop, _, _ = prediction.class_name.partition("___")
     crop = crop_name
-    condition = CLASS_TO_CONDITION.get(prediction.class_name)
+    condition = _condition_from_class(prediction.class_name)
 
-    if raw_crop != ("Corn_(maize)" if crop_name == "maize" else "Tomato") or not condition:
+    if raw_crop != ("Corn_(maize)" if crop_name == "maize" else "Tomato"):
         return DiagnoseResponse(
-            status="out_of_scope" if not crop else "uncertain",
-            retake_reason="This model only covers supported maize and tomato classes. Try a clear leaf photo.",
+            status="uncertain",
+            retake_reason="The crop and disease classifiers disagree. Try a clear photo of one leaf.",
             crop=crop,
             diagnosis_id=uuid4(),
         )
@@ -68,7 +68,7 @@ def diagnose_image(image_bytes: bytes, lang: str = "en") -> DiagnoseResponse:
         "visible_evidence": [prediction.class_name.replace("___", ": ")],
     }]
     differential.extend({
-        "condition": CLASS_TO_CONDITION.get(item["class_name"], "other_or_none"),
+        "condition": _condition_from_class(item["class_name"]),
         "agreement": item["confidence"],
         "visible_evidence": [],
     } for item in prediction.alternatives)
@@ -88,6 +88,21 @@ def diagnose_image(image_bytes: bytes, lang: str = "en") -> DiagnoseResponse:
 
     if not explanation and disease_entry:
         explanation = _build_kb_explanation(disease_entry, confidence)
+    elif not explanation and status == "ok":
+        if condition == "healthy":
+            explanation = (
+                f"The image is most consistent with a healthy {crop} leaf "
+                f"({confidence:.0%} classifier confidence). No disease was identified, "
+                "so pesticide treatment is not recommended from this result."
+            )
+        else:
+            label = prediction.class_name.partition("___")[2].replace("_", " ").strip()
+            explanation = (
+                f"The image is most consistent with {label} "
+                f"({confidence:.0%} classifier confidence), but AgroGuard has no reviewed "
+                "treatment guidance for this class. Do not select a pesticide from this "
+                "screening result; ask a local extension officer to confirm the problem."
+            )
 
     return DiagnoseResponse(
         status=status,
@@ -100,6 +115,18 @@ def diagnose_image(image_bytes: bytes, lang: str = "en") -> DiagnoseResponse:
         explanation_localized=explanation,
         diagnosis_id=uuid4(),
     )
+
+
+def _condition_from_class(class_name: str) -> str:
+    mapped = CLASS_TO_CONDITION.get(class_name)
+    if mapped:
+        return mapped
+    _, separator, label = class_name.partition("___")
+    if not separator:
+        return "unmapped_condition"
+    if label.lower() == "healthy":
+        return "healthy"
+    return label.lower().replace(" ", "_").replace("(", "").replace(")", "")
 
 
 def _build_kb_explanation(entry: dict, confidence: float) -> str:
