@@ -1,6 +1,7 @@
 # AgroGuard
-![alt text](image.png)
-> **Hackathon prototype** — AgroGuard is a working prototype that brings crop photo diagnosis by help of local Qwen-Image-2.1 and trained model for disease identification  and agro-input product verification into one mobile-friendly web app. It is a demonstration project, not a production agronomy or regulatory service.
+![alt text](agroguard\image.png)
+
+> **Hackathon prototype** — AgroGuard is a working prototype that brings crop photo diagnosis by help of locally run Qwen-2.1 and trained model for disease identification  and agro-input cryptographincproduct verification into one mobile-friendly web app. It is a demonstration project, not a production agronomy or regulatory service.
 >
 > **▶ YouTube project showcase:** [Watch the AgroGuard prototype walkthrough](YOUTUBE_VIDEO_URL_GOES_HERE)  
 > Replace `YOUTUBE_VIDEO_URL_GOES_HERE` with the published video URL before sharing this README publicly.
